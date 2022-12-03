@@ -3,6 +3,8 @@ priorities =
   |> Enum.with_index(1)
   |> Enum.reduce(%{}, fn {letter, prio}, memo -> memo |> Map.put(letter, prio) end)
 
+# part 1
+
 File.read!("3_input.txt")
 |> String.trim
 |> String.split("\n")
@@ -23,5 +25,25 @@ File.read!("3_input.txt")
     MapSet.intersection(first_compartment, second_compartment) |> MapSet.to_list
 
   priority_sum + Map.get(priorities, duplicated_item)
+end)
+|> IO.inspect
+
+# part 2
+File.read!("3_input.txt")
+|> String.trim
+|> String.split("\n")
+|> Enum.chunk_every(3)
+|> Enum.reduce(0, fn [first, second, third], priority_sum ->
+  first_set =
+    first |> String.graphemes |> MapSet.new
+  second_set =
+    second |> String.graphemes |> MapSet.new
+  third_set = 
+    third |> String.graphemes |> MapSet.new
+
+  [badge_item] =
+    MapSet.intersection(first_set, MapSet.intersection(second_set, third_set)) |> MapSet.to_list
+
+  priority_sum + Map.get(priorities, badge_item)
 end)
 |> IO.inspect
