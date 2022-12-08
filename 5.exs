@@ -26,24 +26,38 @@ crate_matrix =
     end)
   end)
 
-rearragment_steps
-|> String.split("\n")
-|> Enum.reverse
-|> Enum.drop(1)
-|> Enum.reverse
-|> Enum.reduce(crate_matrix, fn rearragment_step, memo ->
-  [_, count, _, from, _, to] = rearragment_step |> String.split("\n") |> List.first |> String.split(" ")
-  move = count |> String.to_integer
-  from = from |> String.to_integer
-  to = to |> String.to_integer
+rearrange =
+  fn crate_matrix, rearragment_steps, move_multiple_crates ->
+    rearragment_steps
+    |> String.split("\n")
+    |> Enum.reverse
+    |> Enum.drop(1)
+    |> Enum.reverse
+    |> Enum.reduce(crate_matrix, fn rearragment_step, memo ->
+      [_, count, _, from, _, to] = rearragment_step |> String.split("\n") |> List.first |> String.split(" ")
+      move = count |> String.to_integer
+      from = from |> String.to_integer
+      to = to |> String.to_integer
 
-  {crates_left, crates_to_move} = memo[from] |> Enum.split(-(move))
-  memo
-  |> Map.put(from, crates_left)
-  |> Map.put(to, Map.get(memo, to) ++ Enum.reverse(crates_to_move))
-end)
-|> Map.values
-|> Enum.map(& List.last(&1))
-|> Enum.map(& String.at(&1, 1))
-|> Enum.join
-|> IO.inspect
+      {crates_left, crates_to_move} = memo[from] |> Enum.split(-(move))
+
+      to_crates = 
+        if move_multiple_crates,
+          do: Map.get(memo, to) ++ crates_to_move,
+          else: Map.get(memo, to) ++ Enum.reverse(crates_to_move)
+
+      memo
+      |> Map.put(from, crates_left)
+      |> Map.put(to, to_crates)
+    end)
+    |> Map.values
+    |> Enum.map(& List.last(&1))
+    |> Enum.map(& String.at(&1, 1))
+    |> Enum.join
+  end
+
+# part 1
+rearrange.(crate_matrix, rearragment_steps, false) |> IO.inspect
+
+# part 2
+rearrange.(crate_matrix, rearragment_steps, true) |> IO.inspect
